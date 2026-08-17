@@ -14,6 +14,8 @@ const schema = z.object({
   email: z.string().email('Enter a valid email'),
   password: z.string().min(6, 'At least 6 characters'),
   gender: z.enum(['Male', 'Female'], { message: 'Select your gender' }),
+  age: z.coerce.number().min(18, 'Must be 18 or older').max(60, 'Enter a valid age'),
+  location: z.string().min(2, 'Enter your location').max(50),
   course: z.string().min(1, 'Select your course'),
   year: z.string().min(1, 'Select your year'),
 })
@@ -53,7 +55,7 @@ const Register = () => {
     resolver: zodResolver(schema),
   })
 
-  const onSubmit = async ({ name, email, password, gender, course, year }) => {
+  const onSubmit = async ({ name, email, password, gender, age, location, course, year }) => {
     setLoading(true)
     try {
       const { data, error } = await supabase.auth.signUp({ email, password })
@@ -62,6 +64,8 @@ const Register = () => {
         id: data.user.id,
         name: name.trim(),
         gender,
+        age,
+        location: location.trim(),
         course,
         year,
         photos: [],
@@ -215,6 +219,22 @@ const Register = () => {
                 {GENDERS.map(g => <option key={g} value={g} style={{ background: '#111' }}>{g}</option>)}
               </select>
               <Err msg={errors.gender?.message} />
+            </div>
+
+            {/* Age + Location */}
+            <div style={{ display: 'flex', gap: 12 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+                <Label>Age</Label>
+                <input type="number" placeholder="20" min="18" max="60"
+                  style={field(errors.age)} {...register('age')} />
+                <Err msg={errors.age?.message} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 2 }}>
+                <Label>Location</Label>
+                <input type="text" placeholder="e.g. Kakamega, Hostel B" autoComplete="address-level2"
+                  style={field(errors.location)} {...register('location')} />
+                <Err msg={errors.location?.message} />
+              </div>
             </div>
 
             {/* Course */}

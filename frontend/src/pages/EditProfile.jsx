@@ -12,6 +12,8 @@ import { INTERESTS, ROUTES } from '@/lib/constants'
 
 const schema = z.object({
   bio: z.string().max(200, 'Bio must be under 200 characters').optional(),
+  age: z.coerce.number().min(18, 'Must be 18 or older').max(60, 'Enter a valid age'),
+  location: z.string().min(2, 'Enter your location').max(50),
 })
 
 const EditProfile = () => {
@@ -25,7 +27,11 @@ const EditProfile = () => {
 
   const { register, handleSubmit, formState: { errors }, watch } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { bio: profile?.bio || '' },
+    defaultValues: {
+      bio: profile?.bio || '',
+      age: profile?.age || '',
+      location: profile?.location || '',
+    },
   })
 
   const toggleInterest = (interest) => {
@@ -59,12 +65,12 @@ const EditProfile = () => {
 
   const removePhoto = (url) => setPhotos(prev => prev.filter(p => p !== url))
 
-  const onSubmit = async ({ bio }) => {
+  const onSubmit = async ({ bio, age, location }) => {
     setLoading(true)
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ bio: bio?.trim(), photos, interests })
+        .update({ bio: bio?.trim(), age, location: location?.trim(), photos, interests })
         .eq('id', profile.id)
       if (error) throw error
       await refreshProfile()
@@ -211,6 +217,40 @@ const EditProfile = () => {
             </span>
           </div>
           {errors.bio && <span style={{ color: '#f87171', fontSize: 12 }}>{errors.bio.message}</span>}
+        </Section>
+
+        {/* AGE + LOCATION */}
+        <Section label="About you" hint="Your age and where you're based">
+          <div style={{ display: 'flex', gap: 12 }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <input
+                type="number" min="18" max="60" placeholder="Age"
+                style={{
+                  width: '100%', boxSizing: 'border-box',
+                  background: 'rgba(255,255,255,0.05)',
+                  border: errors.age ? '1px solid #f87171' : '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: 14, padding: '13px 14px',
+                  color: 'white', fontSize: 14, outline: 'none',
+                }}
+                {...register('age')}
+              />
+              {errors.age && <span style={{ color: '#f87171', fontSize: 12 }}>{errors.age.message}</span>}
+            </div>
+            <div style={{ flex: 2, display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <input
+                type="text" placeholder="Location, e.g. Kakamega"
+                style={{
+                  width: '100%', boxSizing: 'border-box',
+                  background: 'rgba(255,255,255,0.05)',
+                  border: errors.location ? '1px solid #f87171' : '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: 14, padding: '13px 14px',
+                  color: 'white', fontSize: 14, outline: 'none',
+                }}
+                {...register('location')}
+              />
+              {errors.location && <span style={{ color: '#f87171', fontSize: 12 }}>{errors.location.message}</span>}
+            </div>
+          </div>
         </Section>
 
         {/* INTERESTS */}
