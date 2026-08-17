@@ -15,10 +15,10 @@ const schema = z.object({
 })
 
 const SLIDES = [
-  { gradient: 'from-rose-900 via-pink-900 to-purple-900', emoji: '💑', caption: 'Find your person at MMUST' },
-  { gradient: 'from-purple-900 via-indigo-900 to-blue-900', emoji: '🎓', caption: 'Real connections. Real campus life.' },
-  { gradient: 'from-pink-900 via-rose-800 to-orange-900', emoji: '❤️', caption: 'Love starts here.' },
-  { gradient: 'from-indigo-900 via-purple-900 to-pink-900', emoji: '🌟', caption: 'University memories that last forever.' },
+  { img: '/slide1.jpg', caption: 'Find your person at MMUST' },
+  { img: '/slide2.jpg', caption: 'Real connections. Real campus life.' },
+  { img: '/slide3.jpg', caption: 'Love starts here.' },
+  { img: '/slide4.jpg', caption: 'University memories that last forever.' },
 ]
 
 const Login = () => {
@@ -27,7 +27,7 @@ const Login = () => {
   const [slide, setSlide] = useState(0)
 
   useEffect(() => {
-    const t = setInterval(() => setSlide(s => (s + 1) % SLIDES.length), 3500)
+    const t = setInterval(() => setSlide(s => (s + 1) % SLIDES.length), 4000)
     return () => clearInterval(t)
   }, [])
 
@@ -46,155 +46,184 @@ const Login = () => {
     navigate(ROUTES.DISCOVER)
   }
 
-  const current = SLIDES[slide]
-
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', width: '100%', backgroundColor: '#0a0a0a' }}>
+    <div style={{ position: 'fixed', inset: 0, display: 'flex', overflow: 'hidden' }}>
 
-      {/* LEFT — Hero panel (hidden on small screens) */}
-      <div style={{ display: 'none' }} className="lg:flex lg:flex-1 relative overflow-hidden">
+      {/* FULL SCREEN SLIDESHOW BACKGROUND */}
+      <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
         <AnimatePresence mode="wait">
           <motion.div
             key={slide}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0, scale: 1.08 }}
+            animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.8 }}
-            className={`absolute inset-0 bg-gradient-to-br ${current.gradient}`}
+            transition={{ duration: 1 }}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundImage: `url(${SLIDES[slide].img})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
           />
         </AnimatePresence>
 
-        {/* Pattern overlay */}
-        <div className="absolute inset-0 opacity-10"
-          style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }}
-        />
+        {/* Dark overlay */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.85) 100%)'
+        }} />
+      </div>
 
-        {/* Content */}
-        <div className="relative z-10 flex flex-col justify-between p-12 w-full">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center">
-              <Heart size={20} className="text-white" fill="white" />
-            </div>
-            <span className="text-white font-black text-xl">MMUST Dating</span>
+      {/* CONTENT — full screen, centered */}
+      <div style={{
+        position: 'relative', zIndex: 10,
+        display: 'flex', flexDirection: 'column',
+        width: '100%', height: '100%',
+        overflowY: 'auto',
+      }}>
+
+        {/* Top bar */}
+        <div style={{ padding: '24px 24px 0', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            width: 40, height: 40, borderRadius: 14,
+            background: 'rgba(255,255,255,0.15)',
+            backdropFilter: 'blur(10px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            <Heart size={20} color="white" fill="white" />
           </div>
+          <span style={{ color: 'white', fontWeight: 900, fontSize: 20, letterSpacing: '-0.5px' }}>
+            MMUST Dating
+          </span>
+        </div>
 
-          <div>
+        {/* Spacer */}
+        <div style={{ flex: 1 }} />
+
+        {/* Bottom section — caption + form */}
+        <div style={{ padding: '0 0 40px' }}>
+
+          {/* Slide caption */}
+          <div style={{ padding: '0 24px 24px' }}>
             <AnimatePresence mode="wait">
-              <motion.div
+              <motion.p
                 key={slide}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
+                exit={{ opacity: 0 }}
                 transition={{ duration: 0.5 }}
+                style={{ color: 'white', fontSize: 28, fontWeight: 900, lineHeight: 1.2, marginBottom: 12 }}
               >
-                <div className="text-8xl mb-6">{current.emoji}</div>
-                <p className="text-white text-4xl font-black leading-tight mb-4">{current.caption}</p>
-                <p className="text-white/50 text-lg">Join thousands of MMUST students already connecting.</p>
-              </motion.div>
+                {SLIDES[slide].caption}
+              </motion.p>
             </AnimatePresence>
 
-            <div className="flex gap-2 mt-8">
+            {/* Dots */}
+            <div style={{ display: 'flex', gap: 6 }}>
               {SLIDES.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setSlide(i)}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${i === slide ? 'w-8 bg-white' : 'w-2 bg-white/30'}`}
+                  style={{
+                    height: 4, borderRadius: 9999, border: 'none', cursor: 'pointer',
+                    width: i === slide ? 28 : 8,
+                    background: i === slide ? 'white' : 'rgba(255,255,255,0.35)',
+                    transition: 'all 0.3s',
+                    padding: 0,
+                  }}
                 />
               ))}
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* RIGHT — Form */}
-      <div className="flex flex-col w-full lg:w-[440px] min-h-screen">
+          {/* Form card */}
+          <div style={{
+            margin: '0 16px',
+            background: 'rgba(10,10,10,0.75)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: 28,
+            border: '1px solid rgba(255,255,255,0.08)',
+            padding: '28px 24px',
+          }}>
+            <h2 style={{ color: 'white', fontSize: 22, fontWeight: 900, marginBottom: 4 }}>Welcome back</h2>
+            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, marginBottom: 20 }}>Sign in to your account</p>
 
-        {/* Mobile hero (shown only on small screens) */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={slide}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8 }}
-            className={`lg:hidden h-48 bg-gradient-to-br ${current.gradient} flex flex-col items-center justify-center gap-3 relative`}
-          >
-            <div className="absolute inset-0 opacity-10"
-              style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '30px 30px' }}
-            />
-            <div className="relative z-10 flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center">
-                <Heart size={20} className="text-white" fill="white" />
-              </div>
-              <span className="text-white font-black text-2xl">MMUST Dating</span>
-            </div>
-            <p className="relative z-10 text-white/70 text-sm px-8 text-center">{current.caption}</p>
-            <div className="relative z-10 flex gap-1.5 mt-1">
-              {SLIDES.map((_, i) => (
-                <div key={i} className={`h-1 rounded-full transition-all duration-300 ${i === slide ? 'w-5 bg-white' : 'w-1.5 bg-white/30'}`} />
-              ))}
-            </div>
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Form area */}
-        <div className="flex-1 flex flex-col justify-center px-6 py-10 lg:px-12">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="w-full max-w-sm mx-auto"
-          >
-            <h2 className="text-white text-3xl font-black mb-1">Welcome back</h2>
-            <p className="text-white/40 text-sm mb-8">Sign in to continue</p>
-
-            <div className="flex flex-col gap-5">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-white/50 text-xs font-bold uppercase tracking-widest">Email</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {/* Email */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Email</label>
                 <input
                   type="email"
                   placeholder="you@gmail.com"
                   autoComplete="email"
-                  className={`w-full bg-white/5 border ${errors.email ? 'border-red-500' : 'border-white/10'} rounded-2xl px-4 py-4 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-rose-500 transition-colors`}
+                  style={{
+                    background: 'rgba(255,255,255,0.07)',
+                    border: errors.email ? '1px solid #f87171' : '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: 16, padding: '14px 16px',
+                    color: 'white', fontSize: 14, outline: 'none', width: '100%',
+                    boxSizing: 'border-box',
+                  }}
                   {...register('email')}
                 />
-                {errors.email && <span className="text-xs text-red-400">{errors.email.message}</span>}
+                {errors.email && <span style={{ color: '#f87171', fontSize: 12 }}>{errors.email.message}</span>}
               </div>
 
-              <div className="flex flex-col gap-1.5">
-                <label className="text-white/50 text-xs font-bold uppercase tracking-widest">Password</label>
+              {/* Password */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Password</label>
                 <input
                   type="password"
                   placeholder="••••••••"
                   autoComplete="current-password"
-                  className={`w-full bg-white/5 border ${errors.password ? 'border-red-500' : 'border-white/10'} rounded-2xl px-4 py-4 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-rose-500 transition-colors`}
+                  style={{
+                    background: 'rgba(255,255,255,0.07)',
+                    border: errors.password ? '1px solid #f87171' : '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: 16, padding: '14px 16px',
+                    color: 'white', fontSize: 14, outline: 'none', width: '100%',
+                    boxSizing: 'border-box',
+                  }}
                   {...register('password')}
                 />
-                {errors.password && <span className="text-xs text-red-400">{errors.password.message}</span>}
+                {errors.password && <span style={{ color: '#f87171', fontSize: 12 }}>{errors.password.message}</span>}
               </div>
 
+              {/* Button */}
               <button
                 onClick={handleSubmit(onSubmit)}
                 disabled={loading}
-                className="w-full bg-rose-500 hover:bg-rose-600 active:scale-95 transition-all text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-rose-500/25 mt-1"
+                style={{
+                  width: '100%', background: '#f43f5e',
+                  border: 'none', borderRadius: 16,
+                  padding: '15px', color: 'white',
+                  fontWeight: 800, fontSize: 15,
+                  cursor: 'pointer', marginTop: 4,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  boxShadow: '0 8px 32px rgba(244,63,94,0.35)',
+                  transition: 'transform 0.15s, background 0.15s',
+                }}
+                onMouseDown={e => e.currentTarget.style.transform = 'scale(0.97)'}
+                onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
               >
                 {loading
                   ? <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
-                  : <><Heart size={16} fill="white" /> Sign In</>
+                  : <><Heart size={16} fill="white" color="white" /> Sign In</>
                 }
               </button>
 
-              <p className="text-center text-white/30 text-sm">
+              <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.35)', fontSize: 13 }}>
                 New here?{' '}
-                <Link to={ROUTES.REGISTER} className="text-rose-400 font-bold">
+                <Link to={ROUTES.REGISTER} style={{ color: '#fb7185', fontWeight: 700, textDecoration: 'none' }}>
                   Create account →
                 </Link>
               </p>
             </div>
-          </motion.div>
-        </div>
+          </div>
 
-        <p className="text-white/15 text-xs pb-8 text-center">MMUST students only · Be respectful</p>
+          <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.15)', fontSize: 11, marginTop: 20 }}>
+            MMUST students only · Be respectful
+          </p>
+        </div>
       </div>
     </div>
   )
