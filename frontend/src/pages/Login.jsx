@@ -37,8 +37,9 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#111111]">
-      <div className="flex-1 flex flex-col items-center justify-center px-6 pt-16 pb-8 w-full">
-        <div className="w-full max-w-md mx-auto flex flex-col items-center">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-16">
+        {/* Card — narrow on all screens */}
+        <div className="w-full max-w-sm">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -56,7 +57,7 @@ const Login = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="w-full flex flex-col gap-4"
+            className="flex flex-col gap-4"
           >
             <Input
               label="Email"
