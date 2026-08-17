@@ -7,7 +7,6 @@ import { useProfiles, useLikes } from '@/hooks/useProfiles'
 import { useChatUnlock } from '@/hooks/useChat'
 import { usePaystack } from '@/hooks/usePaystack'
 import { COURSES, GENDERS, YEARS } from '@/lib/constants'
-import PageWrapper from '@/components/layout/PageWrapper'
 import TopBar from '@/components/layout/TopBar'
 import Avatar from '@/components/ui/Avatar'
 import Button from '@/components/ui/Button'
@@ -88,64 +87,61 @@ const PreferencesDrawer = ({ isOpen, onClose, filters, setFilters, onApply }) =>
   </Modal>
 )
 
-const ProfileCard = ({ profile, onLike, onMessage }) => (
-  <motion.div
-    layout
-    initial={{ opacity: 0, y: 24 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: '-40px' }}
-    transition={{ duration: 0.4 }}
-    className="bg-[#161616] rounded-3xl overflow-hidden border border-white/5 shadow-xl shadow-black/30"
+const ProfileSlide = ({ profile, onLike, onMessage }) => (
+  <div
+    className="relative w-full flex-shrink-0 snap-start snap-always"
+    style={{ height: 'calc(100dvh - 56px)' }}
   >
-    <div className="relative w-full aspect-[3/4] bg-white/5">
-      {profile.photos?.[0] ? (
-        <img src={profile.photos[0]} alt={profile.name} className="w-full h-full object-cover" loading="lazy" />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center">
-          <Avatar name={profile.name} size="xl" />
-        </div>
-      )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
+    {profile.photos?.[0] ? (
+      <img src={profile.photos[0]} alt={profile.name} className="w-full h-full object-cover" loading="lazy" />
+    ) : (
+      <div className="w-full h-full flex items-center justify-center bg-[#161616]">
+        <Avatar name={profile.name} size="xl" />
+      </div>
+    )}
 
-      <div className="absolute bottom-0 left-0 right-0 p-5">
-        <div className="flex items-baseline gap-2">
-          <h2 className="text-2xl font-bold text-white">{profile.name}</h2>
-          {profile.age && <span className="text-lg text-white/70 font-medium">{profile.age}</span>}
-        </div>
-        <div className="flex items-center gap-3 mt-1 flex-wrap">
+    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-black/30" />
+
+    {/* Info */}
+    <div className="absolute bottom-24 left-0 right-0 px-5">
+      <div className="flex items-baseline gap-2">
+        <h2 className="text-3xl font-bold text-white">{profile.name}</h2>
+        {profile.age && <span className="text-xl text-white/70 font-medium">{profile.age}</span>}
+      </div>
+      <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+        <span className="flex items-center gap-1 text-white/60 text-xs">
+          <GraduationCap size={13} /> {profile.course} · {profile.year}
+        </span>
+        {profile.location && (
           <span className="flex items-center gap-1 text-white/60 text-xs">
-            <GraduationCap size={13} /> {profile.course} · {profile.year}
+            <MapPin size={13} /> {profile.location}
           </span>
-          {profile.location && (
-            <span className="flex items-center gap-1 text-white/60 text-xs">
-              <MapPin size={13} /> {profile.location}
-            </span>
-          )}
-        </div>
-        {profile.bio && <p className="text-white/80 text-sm mt-2 line-clamp-2">{profile.bio}</p>}
-        {profile.interests?.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-3">
-            {profile.interests.slice(0, 4).map(i => <Badge key={i} variant="brand">{i}</Badge>)}
-          </div>
         )}
       </div>
+      {profile.bio && <p className="text-white/85 text-sm mt-3 leading-relaxed">{profile.bio}</p>}
+      {profile.interests?.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-3">
+          {profile.interests.slice(0, 5).map(i => <Badge key={i} variant="brand">{i}</Badge>)}
+        </div>
+      )}
     </div>
 
-    <div className="flex items-center justify-around p-4">
-      <motion.button whileTap={{ scale: 0.9 }} onClick={() => onLike(profile.id, false)}
-        className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
-        <X size={20} className="text-white/60" />
+    {/* Actions */}
+    <div className="absolute bottom-5 left-0 right-0 flex items-center justify-center gap-5">
+      <motion.button whileTap={{ scale: 0.88 }} onClick={() => onLike(profile.id, false)}
+        className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
+        <X size={22} className="text-white/70" />
       </motion.button>
-      <motion.button whileTap={{ scale: 0.9 }} onClick={() => onMessage(profile)}
-        className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
-        <MessageCircle size={19} className="text-blue-400" />
+      <motion.button whileTap={{ scale: 0.88 }} onClick={() => onMessage(profile)}
+        className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
+        <MessageCircle size={21} className="text-blue-400" />
       </motion.button>
-      <motion.button whileTap={{ scale: 0.9 }} onClick={() => onLike(profile.id, true)}
-        className="w-12 h-12 rounded-full bg-brand-500 flex items-center justify-center shadow-lg shadow-brand-500/30">
-        <Heart size={20} className="text-white" fill="white" />
+      <motion.button whileTap={{ scale: 0.88 }} onClick={() => onLike(profile.id, true)}
+        className="w-16 h-16 rounded-full bg-brand-500 flex items-center justify-center shadow-lg shadow-brand-500/40">
+        <Heart size={24} className="text-white" fill="white" />
       </motion.button>
     </div>
-  </motion.div>
+  </div>
 )
 
 const UnlockModal = ({ isOpen, onClose, profile, onPay }) => (
@@ -183,7 +179,7 @@ const Discover = () => {
     if (observerRef.current) observerRef.current.disconnect()
     observerRef.current = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting && hasMore) fetchMore()
-    }, { rootMargin: '400px' })
+    }, { rootMargin: '800px', threshold: 0 })
     if (node) observerRef.current.observe(node)
   }, [loading, hasMore, fetchMore])
 
@@ -226,7 +222,7 @@ const Discover = () => {
   }
 
   return (
-    <PageWrapper>
+    <div className="flex flex-col" style={{ height: '100dvh', background: '#0a0a0a' }}>
       <TopBar
         title="Discover"
         right={
@@ -239,47 +235,47 @@ const Discover = () => {
         }
       />
 
-      <div className="px-4 py-4">
-        {loading ? (
-          <Spinner />
-        ) : profiles.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 gap-4">
-            <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center">
-              <Heart size={36} className="text-white/20" />
+      {loading ? (
+        <div className="flex-1 flex items-center justify-center"><Spinner /></div>
+      ) : profiles.length === 0 ? (
+        <div className="flex-1 flex flex-col items-center justify-center gap-4 px-6">
+          <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center">
+            <Heart size={36} className="text-white/20" />
+          </div>
+          <p className="text-white/40 text-center">
+            No profiles match your preferences.<br />Try widening your filters.
+          </p>
+          <Button variant="secondary" onClick={() => setDrawerOpen(true)}>
+            Edit Preferences
+          </Button>
+        </div>
+      ) : (
+        <div
+          className="flex-1 overflow-y-auto snap-y snap-mandatory"
+          style={{ scrollSnapType: 'y mandatory', WebkitOverflowScrolling: 'touch' }}
+        >
+          {profiles.map(profile => (
+            <ProfileSlide
+              key={profile.id}
+              profile={profile}
+              onLike={handleLike}
+              onMessage={handleMessage}
+            />
+          ))}
+
+          {hasMore && (
+            <div ref={sentinelRef} className="flex items-center justify-center" style={{ height: 'calc(100dvh - 56px)' }}>
+              {loadingMore ? <Spinner /> : <span className="text-white/20 text-xs">Loading more…</span>}
             </div>
-            <p className="text-white/40 text-center">
-              No profiles match your preferences.<br />Try widening your filters.
-            </p>
-            <Button variant="secondary" onClick={() => setDrawerOpen(true)}>
-              Edit Preferences
-            </Button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <AnimatePresence>
-              {profiles.map(profile => (
-                <ProfileCard
-                  key={profile.id}
-                  profile={profile}
-                  onLike={handleLike}
-                  onMessage={handleMessage}
-                />
-              ))}
-            </AnimatePresence>
-          </div>
-        )}
+          )}
 
-        {/* Infinite scroll sentinel */}
-        {!loading && hasMore && (
-          <div ref={sentinelRef} className="flex justify-center py-8">
-            {loadingMore && <Spinner />}
-          </div>
-        )}
-
-        {!loading && !hasMore && profiles.length > 0 && (
-          <p className="text-center text-white/25 text-xs py-8">You've reached the end ✨</p>
-        )}
-      </div>
+          {!hasMore && (
+            <div className="flex items-center justify-center" style={{ height: '30vh' }}>
+              <p className="text-white/25 text-xs">You've reached the end ✨</p>
+            </div>
+          )}
+        </div>
+      )}
 
       <PreferencesDrawer
         isOpen={drawerOpen}
@@ -295,7 +291,7 @@ const Discover = () => {
         profile={unlockTarget}
         onPay={handlePay}
       />
-    </PageWrapper>
+    </div>
   )
 }
 
