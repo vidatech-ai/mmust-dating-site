@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Heart } from 'lucide-react'
+import { Heart, Download } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { supabase } from '@/lib/supabase'
 import { ROUTES } from '@/lib/constants'
@@ -33,11 +33,18 @@ const QUOTES = [
   { text: '"Love is composed of a single soul inhabiting two bodies."', author: '— Aristotle' },
 ]
 
+let deferredPrompt = null
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault()
+  deferredPrompt = e
+})
+
 const Login = () => {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [slide, setSlide] = useState(0)
   const [quote, setQuote] = useState(0)
+  const [showInstall, setShowInstall] = useState(false)
 
   useEffect(() => {
     const t = setInterval(() => setSlide(s => (s + 1) % SLIDES.length), 4500)
@@ -48,6 +55,24 @@ const Login = () => {
     const t = setInterval(() => setQuote(q => (q + 1) % QUOTES.length), 3500)
     return () => clearInterval(t)
   }, [])
+
+  useEffect(() => {
+    // Check immediately and also listen for the event firing after mount
+    if (deferredPrompt) setShowInstall(true)
+    const handler = () => setShowInstall(true)
+    window.addEventListener('beforeinstallprompt', handler)
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) return
+    deferredPrompt.prompt()
+    const { outcome } = await deferredPrompt.userChoice
+    if (outcome === 'accepted') {
+      deferredPrompt = null
+      setShowInstall(false)
+    }
+  }
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
@@ -84,7 +109,6 @@ const Login = () => {
             }}
           />
         </AnimatePresence>
-        {/* Dark overlay */}
         <div style={{
           position: 'absolute', inset: 0,
           background: 'linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 40%, rgba(0,0,0,0.88) 100%)'
@@ -110,8 +134,9 @@ const Login = () => {
               backdropFilter: 'blur(12px)',
               border: '1px solid rgba(255,255,255,0.2)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
+              overflow: 'hidden',
             }}>
-              <Heart size={20} color="white" fill="white" />
+              <img src="/icon-192.png" alt="MMUST Dating" style={{ width: 32, height: 32, objectFit: 'cover', borderRadius: 8 }} />
             </div>
             <span style={{ color: 'white', fontWeight: 900, fontSize: 20, letterSpacing: '-0.5px', textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
               MMUST Dating
@@ -138,10 +163,8 @@ const Login = () => {
               >
                 <p style={{
                   color: 'rgba(255,255,255,0.92)',
-                  fontSize: 14,
-                  fontStyle: 'italic',
-                  lineHeight: 1.6,
-                  marginBottom: 6,
+                  fontSize: 14, fontStyle: 'italic',
+                  lineHeight: 1.6, marginBottom: 6,
                   textShadow: '0 1px 4px rgba(0,0,0,0.3)',
                 }}>
                   {QUOTES[quote].text}
@@ -151,8 +174,6 @@ const Login = () => {
                 </p>
               </motion.div>
             </AnimatePresence>
-
-            {/* Quote dots */}
             <div style={{ display: 'flex', gap: 5, marginTop: 12 }}>
               {QUOTES.map((_, i) => (
                 <div key={i} style={{
@@ -164,6 +185,43 @@ const Login = () => {
               ))}
             </div>
           </div>
+
+          {/* ── PWA Install Card — centered, visible, non-blocking ── */}
+          {showInstall && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 14,
+                background: 'rgba(244,63,94,0.15)',
+                backdropFilter: 'blur(16px)',
+                border: '1px solid rgba(244,63,94,0.35)',
+                borderRadius: 18,
+                padding: '14px 18px',
+              }}
+            >
+              <img src="/icon-192.png" alt="icon" style={{ width: 48, height: 48, borderRadius: 12, objectFit: 'cover', flexShrink: 0 }} />
+              <div style={{ flex: 1 }}>
+                <p style={{ color: 'white', fontWeight: 800, fontSize: 14, marginBottom: 2 }}>Install MMUST Dating</p>
+                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Add to home screen for the best experience</p>
+              </div>
+              <button
+                onClick={handleInstall}
+                style={{
+                  background: 'linear-gradient(135deg, #f43f5e, #e11d48)',
+                  border: 'none', borderRadius: 12,
+                  padding: '8px 14px',
+                  color: 'white', fontWeight: 700, fontSize: 13,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
+                  flexShrink: 0,
+                  boxShadow: '0 4px 14px rgba(244,63,94,0.4)',
+                }}
+              >
+                <Download size={14} /> Install
+              </button>
+            </motion.div>
+          )}
         </div>
 
         {/* Spacer */}
@@ -286,7 +344,7 @@ const Login = () => {
 
               <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>
                 <a href="/forgot-password" style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, display: 'block', textAlign: 'center', textDecoration: 'none', marginBottom: 4 }}>Forgot password?</a>
-              New here?{' '}
+                New here?{' '}
                 <Link to={ROUTES.REGISTER} style={{ color: '#fb7185', fontWeight: 700, textDecoration: 'none' }}>
                   Create account →
                 </Link>
