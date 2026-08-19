@@ -306,7 +306,7 @@ const WhatsAppModal = ({ isOpen, onClose, profile, unlocked, onPay }) => (
             </p>
           </div>
           {profile?.whatsapp && (
-            
+            <a
               href={`https://wa.me/${(profile.whatsapp || '').replace(/[^0-9]/g, '')}`}
               target="_blank" rel="noreferrer"
               style={{ width:'100%', background:'#25d366', border:'none', borderRadius:14, padding:15, color:'white', fontWeight:800, fontSize:15, cursor:'pointer', display:'block', textAlign:'center', textDecoration:'none', boxShadow:'0 8px 24px rgba(37,211,102,0.35)' }}
