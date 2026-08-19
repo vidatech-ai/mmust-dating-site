@@ -57,9 +57,8 @@ const Login = () => {
   }, [])
 
   useEffect(() => {
-    // Check immediately and also listen for the event firing after mount
     if (deferredPrompt) setShowInstall(true)
-    const handler = () => setShowInstall(true)
+    const handler = (e) => { deferredPrompt = e; setShowInstall(true) }
     window.addEventListener('beforeinstallprompt', handler)
     return () => window.removeEventListener('beforeinstallprompt', handler)
   }, [])
@@ -92,7 +91,7 @@ const Login = () => {
   return (
     <div style={{ position: 'fixed', inset: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
-      {/* FULL SCREEN BACKGROUND SLIDESHOW */}
+      {/* BACKGROUND SLIDESHOW */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
         <AnimatePresence mode="wait">
           <motion.div
@@ -111,7 +110,7 @@ const Login = () => {
         </AnimatePresence>
         <div style={{
           position: 'absolute', inset: 0,
-          background: 'linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 40%, rgba(0,0,0,0.88) 100%)'
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0.60) 0%, rgba(0,0,0,0.35) 40%, rgba(0,0,0,0.90) 100%)'
         }} />
       </div>
 
@@ -123,28 +122,70 @@ const Login = () => {
         overflowY: 'auto',
       }}>
 
-        {/* ── TOP — Brand + Rotating Love Quotes ── */}
-        <div style={{ padding: '28px 24px 0', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {/* ── TOP: centered icon + brand ── */}
+        <div style={{ padding: '36px 24px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
 
-          {/* Brand */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{
-              width: 42, height: 42, borderRadius: 14,
-              background: 'rgba(255,255,255,0.15)',
-              backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(255,255,255,0.2)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              overflow: 'hidden',
-            }}>
-              <img src="/icon-192.png" alt="MMUST Dating" style={{ width: 32, height: 32, objectFit: 'cover', borderRadius: 8 }} />
-            </div>
-            <span style={{ color: 'white', fontWeight: 900, fontSize: 20, letterSpacing: '-0.5px', textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
-              MMUST Dating
-            </span>
+          {/* Centered app icon */}
+          <div style={{
+            width: 88, height: 88, borderRadius: 24,
+            overflow: 'hidden',
+            border: '2px solid rgba(255,255,255,0.25)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+          }}>
+            <img src="/icon-192.png" alt="MMUST Dating" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
+
+          {/* App name */}
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ color: 'white', fontWeight: 900, fontSize: 22, letterSpacing: '-0.5px', textShadow: '0 2px 8px rgba(0,0,0,0.4)', margin: 0 }}>
+              MMUST Dating
+            </p>
+            <p style={{ color: 'rgba(255,182,193,0.9)', fontSize: 13, fontWeight: 500, marginTop: 4, textShadow: '0 1px 4px rgba(0,0,0,0.4)' }}>
+              Your campus love story starts here 💕
+            </p>
+          </div>
+
+          {/* PWA Install card — only on laptop/desktop when prompt is available */}
+          {showInstall && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              style={{
+                width: '100%',
+                display: 'flex', alignItems: 'center', gap: 12,
+                background: 'rgba(244,63,94,0.15)',
+                backdropFilter: 'blur(16px)',
+                border: '1px solid rgba(244,63,94,0.35)',
+                borderRadius: 18,
+                padding: '12px 16px',
+                marginTop: 4,
+              }}
+            >
+              <img src="/icon-192.png" alt="icon" style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
+              <div style={{ flex: 1 }}>
+                <p style={{ color: 'white', fontWeight: 800, fontSize: 13, margin: 0 }}>Install MMUST Dating</p>
+                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, margin: '2px 0 0' }}>Add to home screen for the best experience</p>
+              </div>
+              <button
+                onClick={handleInstall}
+                style={{
+                  background: 'linear-gradient(135deg, #f43f5e, #e11d48)',
+                  border: 'none', borderRadius: 10,
+                  padding: '7px 12px',
+                  color: 'white', fontWeight: 700, fontSize: 12,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5,
+                  flexShrink: 0,
+                  boxShadow: '0 4px 14px rgba(244,63,94,0.4)',
+                }}
+              >
+                <Download size={13} /> Install
+              </button>
+            </motion.div>
+          )}
 
           {/* Rotating love quotes */}
           <div style={{
+            width: '100%',
             background: 'rgba(0,0,0,0.35)',
             backdropFilter: 'blur(16px)',
             border: '1px solid rgba(255,255,255,0.1)',
@@ -185,43 +226,6 @@ const Login = () => {
               ))}
             </div>
           </div>
-
-          {/* ── PWA Install Card — centered, visible, non-blocking ── */}
-          {showInstall && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 14,
-                background: 'rgba(244,63,94,0.15)',
-                backdropFilter: 'blur(16px)',
-                border: '1px solid rgba(244,63,94,0.35)',
-                borderRadius: 18,
-                padding: '14px 18px',
-              }}
-            >
-              <img src="/icon-192.png" alt="icon" style={{ width: 48, height: 48, borderRadius: 12, objectFit: 'cover', flexShrink: 0 }} />
-              <div style={{ flex: 1 }}>
-                <p style={{ color: 'white', fontWeight: 800, fontSize: 14, marginBottom: 2 }}>Install MMUST Dating</p>
-                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Add to home screen for the best experience</p>
-              </div>
-              <button
-                onClick={handleInstall}
-                style={{
-                  background: 'linear-gradient(135deg, #f43f5e, #e11d48)',
-                  border: 'none', borderRadius: 12,
-                  padding: '8px 14px',
-                  color: 'white', fontWeight: 700, fontSize: 13,
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
-                  flexShrink: 0,
-                  boxShadow: '0 4px 14px rgba(244,63,94,0.4)',
-                }}
-              >
-                <Download size={14} /> Install
-              </button>
-            </motion.div>
-          )}
         </div>
 
         {/* Spacer */}
@@ -273,11 +277,10 @@ const Login = () => {
             padding: '28px 22px',
           }}>
             <h2 style={{ color: 'white', fontSize: 22, fontWeight: 900, marginBottom: 2 }}>Welcome back 👋</h2>
-            <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: 13, marginBottom: 22 }}>Sign in to continue your journey</p>
+            <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: 13, marginBottom: 22 }}>Sign in and find your perfect match today</p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-              {/* Email */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <label style={{ color: 'rgba(255,255,255,0.45)', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Email</label>
                 <input
@@ -296,7 +299,6 @@ const Login = () => {
                 {errors.email && <span style={{ color: '#f87171', fontSize: 12 }}>{errors.email.message}</span>}
               </div>
 
-              {/* Password */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <label style={{ color: 'rgba(255,255,255,0.45)', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Password</label>
                 <input
@@ -315,7 +317,6 @@ const Login = () => {
                 {errors.password && <span style={{ color: '#f87171', fontSize: 12 }}>{errors.password.message}</span>}
               </div>
 
-              {/* Sign In button */}
               <button
                 onClick={handleSubmit(onSubmit)}
                 disabled={loading}
