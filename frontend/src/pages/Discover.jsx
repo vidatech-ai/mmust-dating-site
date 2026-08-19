@@ -161,111 +161,115 @@ const Btn = ({ onClick, size, primary, waActive, locked, children }) => (
 // ── Info Box ──────────────────────────────────────────────────────────────────
 const InfoBox = ({ label, children }) => (
   <div style={{
-    background:'rgba(20,20,28,0.82)',
+    background:'rgba(0,0,0,0.55)',
     backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)',
-    border:'1px solid rgba(255,255,255,0.10)',
-    borderRadius:16, padding:'12px 14px',
+    border:'1px solid rgba(255,255,255,0.13)',
+    borderRadius:14, padding:'10px 13px',
   }}>
-    <p style={{ margin:'0 0 7px', color:'rgba(244,63,94,0.85)', fontSize:9, fontWeight:800, textTransform:'uppercase', letterSpacing:'0.11em' }}>{label}</p>
+    <p style={{ margin:'0 0 5px', color:'rgba(255,255,255,0.38)', fontSize:9, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.09em' }}>{label}</p>
     {children}
   </div>
 )
 
 // ── Profile Slide ─────────────────────────────────────────────────────────────
-const ProfileSlide = ({ profile, onLike, onMessage, onWhatsapp, onComment, waUnlocked, commentUnlocked }) => {
-  const SLIDE_H = 'calc(100dvh - 56px - 58px)'
-  // Photo takes top 52% of slide, info panel scrolls in bottom 48%
-  return (
-    <div className="snap-start" style={{ height: SLIDE_H, position:'relative', flexShrink:0, display:'flex', flexDirection:'column', overflow:'hidden' }}>
+const ProfileSlide = ({ profile, onLike, onMessage, onWhatsapp, onComment, waUnlocked, commentUnlocked }) => (
+  <div className="snap-start" style={{ height:'calc(100dvh - 56px - 58px)', position:'relative', flexShrink:0, overflow:'hidden' }}>
 
-      {/* ── Photo — top 52% ── */}
-      <div style={{ flex:'0 0 52%', position:'relative', overflow:'hidden' }}>
-        {profile.photos?.length > 0 ? (
-          <img
-            src={profile.photos[0]}
-            alt={profile.name}
-            style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'center top', display:'block' }}
-          />
-        ) : (
-          <div style={{ width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(255,255,255,0.03)' }}>
-            <Avatar name={profile.name} size="xl" />
-          </div>
-        )}
-        {/* soft bottom fade on photo */}
-        <div style={{ position:'absolute', bottom:0, left:0, right:0, height:60, background:'linear-gradient(to bottom, transparent, #0a0a0a)' }} />
+    {/* CRYSTAL-CLEAR FULL PHOTO — no clipping */}
+    {profile.photos?.length > 0 ? (
+      <img
+        src={profile.photos[0]}
+        alt={profile.name}
+        style={{
+          position:'absolute', inset:0,
+          width:'100%', height:'100%',
+          objectFit:'cover',
+          objectPosition:'center top',
+          display:'block',
+        }}
+      />
+    ) : (
+      <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(255,255,255,0.03)' }}>
+        <Avatar name={profile.name} size="xl" />
+      </div>
+    )}
+
+    {/* Gradient — bottom half only so top photo stays clear */}
+    <div style={{
+      position:'absolute', inset:0, pointerEvents:'none',
+      background:'linear-gradient(to top, rgba(0,0,0,0.97) 0%, rgba(0,0,0,0.78) 28%, rgba(0,0,0,0.12) 54%, transparent 70%)',
+    }} />
+
+    {/* Info Panel — proper boxes, never squeezed */}
+    <div style={{ position:'absolute', bottom:84, left:0, right:0, padding:'0 14px', display:'flex', flexDirection:'column', gap:7 }}>
+
+      {/* Name + Age */}
+      <div style={{ display:'flex', alignItems:'baseline', gap:8 }}>
+        <h2 style={{ margin:0, color:'white', fontSize:27, fontWeight:800, lineHeight:1.1 }}>{profile.name}</h2>
+        {profile.age && <span style={{ color:'rgba(255,255,255,0.65)', fontSize:19, fontWeight:500 }}>{profile.age}</span>}
       </div>
 
-      {/* ── Info Panel — bottom 48%, scrollable ── */}
-      <div style={{ flex:'0 0 48%', overflowY:'auto', background:'#0a0a0a', padding:'10px 14px 0' }}>
-
-        {/* Name + Age row */}
-        <div style={{ display:'flex', alignItems:'baseline', gap:8, marginBottom:6 }}>
-          <h2 style={{ margin:0, color:'white', fontSize:24, fontWeight:800, lineHeight:1.1 }}>{profile.name}</h2>
-          {profile.age && <span style={{ color:'rgba(255,255,255,0.55)', fontSize:17, fontWeight:500 }}>{profile.age}</span>}
-        </div>
-
-        {/* Course + Location chips */}
-        <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginBottom:10 }}>
-          <span style={{ display:'flex', alignItems:'center', gap:4, background:'rgba(255,255,255,0.07)', borderRadius:20, padding:'4px 10px', color:'rgba(255,255,255,0.6)', fontSize:11 }}>
-            <GraduationCap size={10} /> {profile.course} · {profile.year}
+      {/* Course + Location */}
+      <div style={{ display:'flex', flexWrap:'wrap', gap:10 }}>
+        <span style={{ color:'rgba(255,255,255,0.55)', fontSize:12, display:'flex', alignItems:'center', gap:3 }}>
+          <GraduationCap size={11} /> {profile.course} · {profile.year}
+        </span>
+        {profile.location && (
+          <span style={{ color:'rgba(255,255,255,0.55)', fontSize:12, display:'flex', alignItems:'center', gap:3 }}>
+            <MapPin size={11} /> {profile.location}
           </span>
-          {profile.location && (
-            <span style={{ display:'flex', alignItems:'center', gap:4, background:'rgba(255,255,255,0.07)', borderRadius:20, padding:'4px 10px', color:'rgba(255,255,255,0.6)', fontSize:11 }}>
-              <MapPin size={10} /> {profile.location}
-            </span>
-          )}
-        </div>
-
-        {/* Info boxes */}
-        <div style={{ display:'flex', flexDirection:'column', gap:8, paddingBottom:76 }}>
-
-          {profile.bio && (
-            <InfoBox label="About Me">
-              <p style={{ margin:0, color:'rgba(255,255,255,0.88)', fontSize:13, lineHeight:1.6 }}>{profile.bio}</p>
-            </InfoBox>
-          )}
-
-          {profile.interests?.length > 0 && (
-            <InfoBox label="Hobbies & Interests">
-              <div style={{ display:'flex', flexWrap:'wrap', gap:5 }}>
-                {profile.interests.slice(0,8).map(i => (
-                  <span key={i} style={{
-                    background:'rgba(244,63,94,0.15)', border:'1px solid rgba(244,63,94,0.28)',
-                    borderRadius:20, padding:'3px 10px', color:'#fb7185', fontSize:11, fontWeight:600,
-                  }}>{i}</span>
-                ))}
-              </div>
-            </InfoBox>
-          )}
-
-          {profile.looking_for && (
-            <InfoBox label="Looking For">
-              <p style={{ margin:0, color:'rgba(255,255,255,0.88)', fontSize:13, lineHeight:1.6 }}>{profile.looking_for}</p>
-            </InfoBox>
-          )}
-
-        </div>
+        )}
       </div>
 
-      {/* ── Action Buttons — float over bottom of info panel ── */}
-      <div style={{
-        position:'absolute', bottom:10, left:0, right:0,
-        display:'flex', alignItems:'center', justifyContent:'center', gap:10,
-        pointerEvents:'none',
-      }}>
-        {[
-          { size:50, onClick:() => onLike(profile.id, false), children:<X size={20} color="rgba(255,255,255,0.75)" /> },
-          { size:50, onClick:() => onComment(profile), locked:!commentUnlocked, children:<MessageCircle size={18} color={commentUnlocked ? '#60a5fa' : 'rgba(255,255,255,0.55)'} /> },
-          { size:66, primary:true, onClick:() => onLike(profile.id, true), children:<Heart size={27} color="white" fill="white" /> },
-          { size:50, onClick:() => onMessage(profile), children:<Send size={17} color="#60a5fa" /> },
-          { size:50, onClick:() => onWhatsapp(profile), locked:!waUnlocked, waActive:waUnlocked, children:<Phone size={18} color={waUnlocked ? '#25d366' : 'rgba(255,255,255,0.55)'} /> },
-        ].map((props, i) => (
-          <Btn key={i} {...props} />
-        ))}
-      </div>
+      {/* Bio Box */}
+      {profile.bio && (
+        <InfoBox label="About me">
+          <p style={{ margin:0, color:'rgba(255,255,255,0.92)', fontSize:13, lineHeight:1.55 }}>{profile.bio}</p>
+        </InfoBox>
+      )}
+
+      {/* Hobbies Box */}
+      {profile.interests?.length > 0 && (
+        <InfoBox label="Hobbies & Interests">
+          <div style={{ display:'flex', flexWrap:'wrap', gap:5 }}>
+            {profile.interests.slice(0, 8).map(i => (
+              <span key={i} style={{
+                background:'rgba(244,63,94,0.18)', border:'1px solid rgba(244,63,94,0.32)',
+                borderRadius:20, padding:'3px 10px', color:'#fb7185', fontSize:11, fontWeight:600,
+              }}>{i}</span>
+            ))}
+          </div>
+        </InfoBox>
+      )}
+
+      {/* Looking For Box */}
+      {profile.looking_for && (
+        <InfoBox label="Looking For">
+          <p style={{ margin:0, color:'rgba(255,255,255,0.92)', fontSize:13, lineHeight:1.5 }}>{profile.looking_for}</p>
+        </InfoBox>
+      )}
     </div>
-  )
-}
+
+    {/* Action Buttons */}
+    <div style={{ position:'absolute', bottom:14, left:0, right:0, display:'flex', alignItems:'center', justifyContent:'center', gap:10 }}>
+      <Btn size={50} onClick={() => onLike(profile.id, false)}>
+        <X size={20} color="rgba(255,255,255,0.75)" />
+      </Btn>
+      <Btn size={50} onClick={() => onComment(profile)} locked={!commentUnlocked}>
+        <MessageCircle size={18} color={commentUnlocked ? '#60a5fa' : 'rgba(255,255,255,0.55)'} />
+      </Btn>
+      <Btn size={66} primary onClick={() => onLike(profile.id, true)}>
+        <Heart size={27} color="white" fill="white" />
+      </Btn>
+      <Btn size={50} onClick={() => onMessage(profile)}>
+        <Send size={17} color="#60a5fa" />
+      </Btn>
+      <Btn size={50} onClick={() => onWhatsapp(profile)} locked={!waUnlocked} waActive={waUnlocked}>
+        <Phone size={18} color={waUnlocked ? '#25d366' : 'rgba(255,255,255,0.55)'} />
+      </Btn>
+    </div>
+  </div>
+)
 
 // ── Chat Unlock Modal ─────────────────────────────────────────────────────────
 const ChatUnlockModal = ({ isOpen, onClose, profile, onPay }) => (
@@ -316,7 +320,7 @@ const WhatsAppModal = ({ isOpen, onClose, profile, unlocked, onPay }) => (
         <>
           <div style={{ textAlign:'center' }}>
             <p style={{ color:'white', fontWeight:700, fontSize:16, margin:0 }}>View {profile?.name}&apos;s Number</p>
-            <p style={{ color:'rgba(255,255,255,0.4)', fontSize:13, margin:'4px 0 0' }}>Pay once per session · resets on logout</p>
+            <p style={{ color:'rgba(255,255,255,0.4)', fontSize:13, margin:'4px 0 0' }}>Session-only · resets after logout</p>
           </div>
           <div style={{ width:'100%', background:'rgba(255,255,255,0.05)', borderRadius:16, padding:16, textAlign:'center' }}>
             <p style={{ color:'rgba(255,255,255,0.5)', fontSize:13, margin:0 }}>Unlock fee</p>
@@ -379,7 +383,7 @@ const CommentModal = ({ isOpen, onClose, profile, unlocked, onPay, currentUserId
           <div style={{ textAlign:'center' }}>
             <p style={{ color:'white', fontWeight:700, fontSize:16, margin:0 }}>Unlock Commenting</p>
             <p style={{ color:'rgba(255,255,255,0.4)', fontSize:13, margin:'4px 0 0' }}>
-              Pay to comment on {profile?.name}&apos;s profile · resets on logout
+              Pay to comment on {profile?.name}&apos;s profile · resets after logout
             </p>
           </div>
           <div style={{ width:'100%', background:'rgba(255,255,255,0.05)', borderRadius:16, padding:16, textAlign:'center' }}>
@@ -441,9 +445,15 @@ const Discover = () => {
 
   const [filters, setFilters] = useState({ gender:'', course:'', year:'', location:'', minAge:'', maxAge:'' })
   const [drawerOpen, setDrawerOpen] = useState(false)
+
+  // Chat unlock
   const [chatTarget, setChatTarget] = useState(null)
+
+  // WhatsApp — session state only (resets on logout / refresh)
   const [waUnlocked, setWaUnlocked] = useState({})
   const [waTarget, setWaTarget] = useState(null)
+
+  // Comments — session state per profile
   const [commentUnlocked, setCommentUnlocked] = useState({})
   const [commentTarget, setCommentTarget] = useState(null)
 
@@ -494,9 +504,12 @@ const Discover = () => {
     payWhatsappUnlock({
       targetUserId: waTarget.id,
       onSuccess: async (ref) => {
+        // Audit trail in Supabase
         supabase.from('whatsapp_unlocks').insert({ user_id: user.id, profile_id: waTarget.id, reference: ref })
+        // Session-only unlock — cleared on logout
         setWaUnlocked(prev => ({ ...prev, [waTarget.id]: true }))
         toast.success('WhatsApp unlocked! 🎉')
+        // keep modal open so number is visible immediately
       },
       onClose: () => toast('Payment cancelled'),
     })
@@ -560,7 +573,7 @@ const Discover = () => {
           )}
           {!hasMore && profiles.length > 0 && (
             <div style={{ height:'30vh', display:'flex', alignItems:'center', justifyContent:'center' }}>
-              <p style={{ color:'rgba(255,255,255,0.2)', fontSize:12, margin:0 }}>You have seen everyone ✨</p>
+              <p style={{ color:'rgba(255,255,255,0.2)', fontSize:12, margin:0 }}>You've seen everyone ✨</p>
             </div>
           )}
         </div>

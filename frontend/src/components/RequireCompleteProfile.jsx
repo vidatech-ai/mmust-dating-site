@@ -14,7 +14,6 @@ export const isProfileComplete = (profile) => {
 }
 
 const isNewUser = (profile) => {
-  // Only redirect if this is a brand-new account with no name at all
   if (!profile) return true
   return !profile.name || String(profile.name).trim() === ''
 }
@@ -24,13 +23,9 @@ const RequireCompleteProfile = ({ children }) => {
   const location = useLocation()
 
   if (loading) return <Spinner fullScreen />
-
-  // New users (no name) → force them to fill profile
-  // Returning users with partial profiles → let them through, they can edit voluntarily
   if (isNewUser(profile) && location.pathname !== ROUTES.EDIT_PROFILE) {
     return <Navigate to={ROUTES.EDIT_PROFILE} replace />
   }
-
   return children
 }
 
