@@ -3,6 +3,7 @@ import { useAuth } from '@/context/AuthContext'
 import { ROUTES } from '@/lib/constants'
 import Spinner from '@/components/ui/Spinner'
 import PWAInstallBanner from '@/components/PWAInstallBanner'
+import RequireCompleteProfile from '@/components/RequireCompleteProfile'
 
 import Login from '@/pages/Login'
 import Register from '@/pages/Register'
@@ -38,14 +39,14 @@ const App = () => {
         <Route path={ROUTES.HOME} element={<Navigate to={ROUTES.DISCOVER} replace />} />
         <Route path={ROUTES.LOGIN} element={<GuestRoute><Login /></GuestRoute>} />
         <Route path={ROUTES.REGISTER} element={<GuestRoute><Register /></GuestRoute>} />
-        <Route path={ROUTES.DISCOVER} element={<ProtectedRoute><Discover /></ProtectedRoute>} />
-        <Route path={ROUTES.PROFILE} element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path={ROUTES.DISCOVER} element={<ProtectedRoute><RequireCompleteProfile><Discover /></RequireCompleteProfile></ProtectedRoute>} />
+        <Route path={ROUTES.PROFILE} element={<ProtectedRoute><RequireCompleteProfile><Profile /></RequireCompleteProfile></ProtectedRoute>} />
         <Route path={ROUTES.EDIT_PROFILE} element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
-        <Route path={ROUTES.CHAT} element={<ProtectedRoute><Chat /></ProtectedRoute>} />
-        <Route path={ROUTES.CHAT_ROOM} element={<ProtectedRoute><ChatRoom /></ProtectedRoute>} />
-        <Route path={ROUTES.SUPPORT} element={<ProtectedRoute><Support /></ProtectedRoute>} />
+        <Route path={ROUTES.CHAT} element={<ProtectedRoute><RequireCompleteProfile><Chat /></RequireCompleteProfile></ProtectedRoute>} />
+        <Route path={ROUTES.CHAT_ROOM} element={<ProtectedRoute><RequireCompleteProfile><ChatRoom /></RequireCompleteProfile></ProtectedRoute>} />
+        <Route path={ROUTES.SUPPORT} element={<ProtectedRoute><RequireCompleteProfile><Support /></RequireCompleteProfile></ProtectedRoute>} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path={ROUTES.ADMIN} element={<Dashboard />} />
+        <Route path={ROUTES.ADMIN} element={<Dashboard />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>

@@ -86,8 +86,9 @@ const EditProfile = () => {
       const { data } = supabase.storage.from('photos').getPublicUrl(path)
       setPhotos(prev => [...prev, data.publicUrl])
       toast.success('Photo uploaded!')
-    } catch {
-      toast.error('Upload failed')
+    } catch (err) {
+      console.error('Upload error:', err)
+      toast.error(err.message || 'Upload failed')
     } finally {
       setUploading(false)
     }
