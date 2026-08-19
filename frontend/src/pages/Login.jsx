@@ -285,7 +285,8 @@ const Login = () => {
               </button>
 
               <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>
-                New here?{' '}
+                <a href="/forgot-password" style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, display: 'block', textAlign: 'center', textDecoration: 'none', marginBottom: 4 }}>Forgot password?</a>
+              New here?{' '}
                 <Link to={ROUTES.REGISTER} style={{ color: '#fb7185', fontWeight: 700, textDecoration: 'none' }}>
                   Create account →
                 </Link>

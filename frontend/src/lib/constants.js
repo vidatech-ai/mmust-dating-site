@@ -2,6 +2,8 @@ export const APP_NAME = 'MMUST Dating'
 export const APP_TAGLINE = 'Find your person within MMUST'
 
 export const CHAT_UNLOCK_AMOUNT = 50
+export const WHATSAPP_UNLOCK_AMOUNT = 20
+export const COMMENT_UNLOCK_AMOUNT = 10
 
 export const SUPPORT_AMOUNTS = [50, 100, 200, 500]
 

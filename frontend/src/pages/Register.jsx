@@ -7,17 +7,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Heart } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { supabase } from '@/lib/supabase'
-import { ROUTES, GENDERS, COURSES, YEARS, APP_NAME } from '@/lib/constants'
+import { ROUTES, APP_NAME } from '@/lib/constants'
 
 const schema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters').max(50),
   email: z.string().email('Enter a valid email'),
   password: z.string().min(6, 'At least 6 characters'),
-  gender: z.enum(['Male', 'Female'], { message: 'Select your gender' }),
-  age: z.coerce.number().min(18, 'Must be 18 or older').max(60, 'Enter a valid age'),
-  location: z.string().min(2, 'Enter your location').max(50),
-  course: z.string().min(1, 'Select your course'),
-  year: z.string().min(1, 'Select your year'),
 })
 
 const SLIDES = [
@@ -37,8 +31,6 @@ const field = (error) => ({
   outline: 'none',
   width: '100%',
   boxSizing: 'border-box',
-  appearance: 'none',
-  WebkitAppearance: 'none',
 })
 
 const Register = () => {
@@ -55,19 +47,14 @@ const Register = () => {
     resolver: zodResolver(schema),
   })
 
-  const onSubmit = async ({ name, email, password, gender, age, location, course, year }) => {
+  const onSubmit = async ({ email, password }) => {
     setLoading(true)
     try {
       const { data, error } = await supabase.auth.signUp({ email, password })
       if (error) throw error
       const { error: profileError } = await supabase.from('profiles').insert({
         id: data.user.id,
-        name: name.trim(),
-        gender,
-        age,
-        location: location.trim(),
-        course,
-        year,
+        name: '',
         photos: [],
         interests: [],
         is_banned: false,
@@ -88,14 +75,11 @@ const Register = () => {
     </label>
   )
 
-  const Err = ({ msg }) => msg
-    ? <span style={{ color: '#f87171', fontSize: 12 }}>{msg}</span>
-    : null
+  const Err = ({ msg }) => msg ? <span style={{ color: '#f87171', fontSize: 12 }}>{msg}</span> : null
 
   return (
     <div style={{ position: 'fixed', inset: 0, display: 'flex', overflow: 'hidden' }}>
 
-      {/* SLIDESHOW BACKGROUND */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
         <AnimatePresence mode="wait">
           <motion.div
@@ -118,7 +102,6 @@ const Register = () => {
         }} />
       </div>
 
-      {/* SCROLLABLE CONTENT */}
       <div style={{
         position: 'relative', zIndex: 10,
         width: '100%', height: '100%',
@@ -126,8 +109,6 @@ const Register = () => {
         display: 'flex',
         flexDirection: 'column',
       }}>
-
-        {/* Top bar */}
         <div style={{ padding: '24px 24px 0', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
           <div style={{
             width: 40, height: 40, borderRadius: 14,
@@ -142,7 +123,6 @@ const Register = () => {
           </span>
         </div>
 
-        {/* Slide caption + dots */}
         <div style={{ padding: '20px 24px 0', flexShrink: 0 }}>
           <AnimatePresence mode="wait">
             <motion.p
@@ -172,7 +152,6 @@ const Register = () => {
           </div>
         </div>
 
-        {/* Form card */}
         <div style={{
           margin: '0 16px 32px',
           background: 'rgba(10,10,10,0.78)',
@@ -186,16 +165,6 @@ const Register = () => {
           <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, marginBottom: 22 }}>Join MMUST Dating today</p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-
-            {/* Name */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <Label>Full Name</Label>
-              <input type="text" placeholder="Your name" autoComplete="name"
-                style={field(errors.name)} {...register('name')} />
-              <Err msg={errors.name?.message} />
-            </div>
-
-            {/* Email */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <Label>Email</Label>
               <input type="email" placeholder="you@mmust.ac.ke" autoComplete="email"
@@ -203,7 +172,6 @@ const Register = () => {
               <Err msg={errors.email?.message} />
             </div>
 
-            {/* Password */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <Label>Password</Label>
               <input type="password" placeholder="••••••••" autoComplete="new-password"
@@ -211,53 +179,6 @@ const Register = () => {
               <Err msg={errors.password?.message} />
             </div>
 
-            {/* Gender */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <Label>Gender</Label>
-              <select style={{ ...field(errors.gender), color: 'rgba(255,255,255,0.85)' }} {...register('gender')}>
-                <option value="" style={{ background: '#111' }}>Select gender</option>
-                {GENDERS.map(g => <option key={g} value={g} style={{ background: '#111' }}>{g}</option>)}
-              </select>
-              <Err msg={errors.gender?.message} />
-            </div>
-
-            {/* Age + Location */}
-            <div style={{ display: 'flex', gap: 12 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
-                <Label>Age</Label>
-                <input type="number" placeholder="20" min="18" max="60"
-                  style={field(errors.age)} {...register('age')} />
-                <Err msg={errors.age?.message} />
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 2 }}>
-                <Label>Location</Label>
-                <input type="text" placeholder="e.g. Kakamega, Hostel B" autoComplete="address-level2"
-                  style={field(errors.location)} {...register('location')} />
-                <Err msg={errors.location?.message} />
-              </div>
-            </div>
-
-            {/* Course */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <Label>Course</Label>
-              <select style={{ ...field(errors.course), color: 'rgba(255,255,255,0.85)' }} {...register('course')}>
-                <option value="" style={{ background: '#111' }}>Select course</option>
-                {COURSES.map(c => <option key={c} value={c} style={{ background: '#111' }}>{c}</option>)}
-              </select>
-              <Err msg={errors.course?.message} />
-            </div>
-
-            {/* Year */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <Label>Year of Study</Label>
-              <select style={{ ...field(errors.year), color: 'rgba(255,255,255,0.85)' }} {...register('year')}>
-                <option value="" style={{ background: '#111' }}>Select year</option>
-                {YEARS.map(y => <option key={y} value={y} style={{ background: '#111' }}>{y}</option>)}
-              </select>
-              <Err msg={errors.year?.message} />
-            </div>
-
-            {/* Submit */}
             <button
               onClick={handleSubmit(onSubmit)}
               disabled={loading}
