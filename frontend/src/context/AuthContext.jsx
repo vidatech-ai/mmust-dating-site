@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 
-const IDLE_TIMEOUT = 30 * 60 * 1000 // 30 minutes
+const IDLE_TIMEOUT = 30 * 60 * 1000
 
 const AuthContext = createContext(null)
 
@@ -41,17 +41,14 @@ export const AuthProvider = ({ children }) => {
     return () => listener.subscription.unsubscribe()
   }, [])
 
-  // Start/stop idle timer based on user state
   useEffect(() => {
     if (!user) {
       if (idleTimer.current) clearTimeout(idleTimer.current)
       return
     }
-
     const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click']
     events.forEach(e => window.addEventListener(e, resetIdleTimer))
     resetIdleTimer()
-
     return () => {
       events.forEach(e => window.removeEventListener(e, resetIdleTimer))
       if (idleTimer.current) clearTimeout(idleTimer.current)
@@ -64,6 +61,16 @@ export const AuthProvider = ({ children }) => {
       .select('*')
       .eq('id', userId)
       .single()
+
+    // Kick banned users out immediately
+    if (data?.is_banned) {
+      await supabase.auth.signOut()
+      setUser(null)
+      setProfile(null)
+      setLoading(false)
+      return
+    }
+
     setProfile(data)
     setLoading(false)
   }
