@@ -17,7 +17,7 @@ export const useProfiles = (filters = {}) => {
   const buildQuery = (page) => {
     let query = supabase
       .from('profiles')
-      .select('id, name, bio, course, year, gender, age, location, interests, photos')
+      .select('id, name, bio, course, year, gender, age, location, interests, photos, looking_for, whatsapp')
       .neq('id', user.id)
       .eq('is_banned', false)
 
@@ -94,7 +94,7 @@ export const useProfile = (userId) => {
     try {
       const { data, error: err } = await supabase
         .from('profiles')
-        .select('id, name, bio, course, year, gender, age, location, interests, photos')
+        .select('id, name, bio, course, year, gender, age, location, interests, photos, looking_for, whatsapp')
         .eq('id', userId)
         .single()
       if (err) throw err
