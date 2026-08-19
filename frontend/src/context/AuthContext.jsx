@@ -1,5 +1,7 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+
+const IDLE_TIMEOUT = 30 * 60 * 1000 // 30 minutes
 
 const AuthContext = createContext(null)
 
@@ -7,6 +9,18 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const idleTimer = useRef(null)
+
+  const doSignOut = async () => {
+    await supabase.auth.signOut()
+    setUser(null)
+    setProfile(null)
+  }
+
+  const resetIdleTimer = () => {
+    if (idleTimer.current) clearTimeout(idleTimer.current)
+    idleTimer.current = setTimeout(doSignOut, IDLE_TIMEOUT)
+  }
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -27,6 +41,23 @@ export const AuthProvider = ({ children }) => {
     return () => listener.subscription.unsubscribe()
   }, [])
 
+  // Start/stop idle timer based on user state
+  useEffect(() => {
+    if (!user) {
+      if (idleTimer.current) clearTimeout(idleTimer.current)
+      return
+    }
+
+    const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click']
+    events.forEach(e => window.addEventListener(e, resetIdleTimer))
+    resetIdleTimer()
+
+    return () => {
+      events.forEach(e => window.removeEventListener(e, resetIdleTimer))
+      if (idleTimer.current) clearTimeout(idleTimer.current)
+    }
+  }, [user])
+
   const fetchProfile = async (userId) => {
     const { data } = await supabase
       .from('profiles')
@@ -42,9 +73,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   const signOut = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
-    setProfile(null)
+    await doSignOut()
   }
 
   return (

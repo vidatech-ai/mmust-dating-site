@@ -1,18 +1,106 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Heart, X, SlidersHorizontal, MessageCircle, MapPin, GraduationCap } from 'lucide-react'
+import { Heart, X, SlidersHorizontal, MessageCircle, MapPin, GraduationCap, User, HeadphonesIcon, Download } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useProfiles, useLikes } from '@/hooks/useProfiles'
 import { useChatUnlock } from '@/hooks/useChat'
 import { usePaystack } from '@/hooks/usePaystack'
-import { COURSES, GENDERS, YEARS } from '@/lib/constants'
+import { COURSES, GENDERS, YEARS, ROUTES } from '@/lib/constants'
 import TopBar from '@/components/layout/TopBar'
 import Avatar from '@/components/ui/Avatar'
 import Button from '@/components/ui/Button'
 import Modal from '@/components/ui/Modal'
 import Badge from '@/components/ui/Badge'
 import Spinner from '@/components/ui/Spinner'
+
+// PWA install prompt
+let deferredPrompt = null
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault()
+  deferredPrompt = e
+})
+
+const BottomNav = ({ navigate }) => {
+  const path = window.location.pathname
+  const items = [
+    { icon: Heart, label: 'Discover', route: ROUTES.DISCOVER },
+    { icon: MessageCircle, label: 'Chats', route: ROUTES.CHAT },
+    { icon: User, label: 'Profile', route: ROUTES.PROFILE },
+    { icon: HeadphonesIcon, label: 'Support', route: ROUTES.SUPPORT },
+  ]
+  return (
+    <div style={{
+      position: 'fixed', bottom: 0, left: 0, right: 0,
+      background: 'rgba(10,10,10,0.96)',
+      backdropFilter: 'blur(16px)',
+      borderTop: '1px solid rgba(255,255,255,0.07)',
+      display: 'flex',
+      zIndex: 50,
+      paddingBottom: 'env(safe-area-inset-bottom)',
+    }}>
+      {items.map(({ icon: Icon, label, route }) => {
+        const active = path === route
+        return (
+          <button
+            key={route}
+            onClick={() => navigate(route)}
+            style={{
+              flex: 1, display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+              padding: '10px 0', background: 'none', border: 'none',
+              cursor: 'pointer', gap: 4,
+            }}
+          >
+            <Icon size={20} color={active ? '#f43f5e' : 'rgba(255,255,255,0.35)'} fill={active && label === 'Discover' ? '#f43f5e' : 'none'} />
+            <span style={{ color: active ? '#f43f5e' : 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: active ? 700 : 500 }}>{label}</span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+const PWAInstallButton = () => {
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const check = () => setVisible(!!deferredPrompt)
+    check()
+    window.addEventListener('beforeinstallprompt', check)
+    return () => window.removeEventListener('beforeinstallprompt', check)
+  }, [])
+
+  if (!visible) return null
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) return
+    deferredPrompt.prompt()
+    const { outcome } = await deferredPrompt.userChoice
+    if (outcome === 'accepted') {
+      deferredPrompt = null
+      setVisible(false)
+    }
+  }
+
+  return (
+    <button
+      onClick={handleInstall}
+      style={{
+        position: 'fixed', bottom: 70, right: 16,
+        background: 'rgba(244,63,94,0.15)',
+        border: '1px solid rgba(244,63,94,0.3)',
+        borderRadius: 20, padding: '8px 14px',
+        display: 'flex', alignItems: 'center', gap: 6,
+        color: '#fb7185', fontSize: 12, fontWeight: 700,
+        cursor: 'pointer', zIndex: 49,
+        backdropFilter: 'blur(12px)',
+      }}
+    >
+      <Download size={13} /> Install App
+    </button>
+  )
+}
 
 const PreferencesDrawer = ({ isOpen, onClose, filters, setFilters, onApply }) => (
   <Modal isOpen={isOpen} onClose={onClose} title="Who are you looking for?">
@@ -28,40 +116,33 @@ const PreferencesDrawer = ({ isOpen, onClose, filters, setFilters, onApply }) =>
           {GENDERS.map(g => <option key={g} value={g} className="bg-[#111]">{g}</option>)}
         </select>
       </div>
-
       <div className="flex flex-col gap-1.5">
         <label className="text-sm text-white/60">Age range</label>
         <div className="flex items-center gap-3">
-          <input
-            type="number" min={18} max={60} placeholder="Min"
+          <input type="number" min={18} max={60} placeholder="Min"
             value={filters.minAge}
             onChange={e => setFilters(f => ({ ...f, minAge: e.target.value }))}
             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500"
           />
           <span className="text-white/30">–</span>
-          <input
-            type="number" min={18} max={60} placeholder="Max"
+          <input type="number" min={18} max={60} placeholder="Max"
             value={filters.maxAge}
             onChange={e => setFilters(f => ({ ...f, maxAge: e.target.value }))}
             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500"
           />
         </div>
       </div>
-
       <div className="flex flex-col gap-1.5">
         <label className="text-sm text-white/60">Location</label>
-        <input
-          type="text" placeholder="e.g. Kakamega, Hostel B..."
+        <input type="text" placeholder="e.g. Kakamega, Hostel B..."
           value={filters.location}
           onChange={e => setFilters(f => ({ ...f, location: e.target.value }))}
           className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500"
         />
       </div>
-
       <div className="flex flex-col gap-1.5">
         <label className="text-sm text-white/60">Course</label>
-        <select
-          value={filters.course}
+        <select value={filters.course}
           onChange={e => setFilters(f => ({ ...f, course: e.target.value }))}
           className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500"
         >
@@ -69,11 +150,9 @@ const PreferencesDrawer = ({ isOpen, onClose, filters, setFilters, onApply }) =>
           {COURSES.map(c => <option key={c} value={c} className="bg-[#111]">{c}</option>)}
         </select>
       </div>
-
       <div className="flex flex-col gap-1.5">
         <label className="text-sm text-white/60">Year</label>
-        <select
-          value={filters.year}
+        <select value={filters.year}
           onChange={e => setFilters(f => ({ ...f, year: e.target.value }))}
           className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500"
         >
@@ -81,28 +160,21 @@ const PreferencesDrawer = ({ isOpen, onClose, filters, setFilters, onApply }) =>
           {YEARS.map(y => <option key={y} value={y} className="bg-[#111]">{y}</option>)}
         </select>
       </div>
-
-      <Button size="full" onClick={onApply}>Apply Preferences</Button>
+      <Button size="full" onClick={onApply}>Apply Filters</Button>
     </div>
   </Modal>
 )
 
 const ProfileSlide = ({ profile, onLike, onMessage }) => (
-  <div
-    className="relative w-full flex-shrink-0 snap-start snap-always"
-    style={{ height: 'calc(100dvh - 56px)' }}
-  >
-    {profile.photos?.[0] ? (
-      <img src={profile.photos[0]} alt={profile.name} className="w-full h-full object-cover" loading="lazy" />
+  <div className="snap-start relative flex-shrink-0" style={{ height: 'calc(100dvh - 56px - 58px)', overflow: 'hidden' }}>
+    {profile.photos?.length > 0 ? (
+      <img src={profile.photos[0]} alt={profile.name} className="absolute inset-0 w-full h-full object-cover" />
     ) : (
-      <div className="w-full h-full flex items-center justify-center bg-[#161616]">
+      <div className="absolute inset-0 flex items-center justify-center bg-white/5">
         <Avatar name={profile.name} size="xl" />
       </div>
     )}
-
     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-black/30" />
-
-    {/* Info */}
     <div className="absolute bottom-24 left-0 right-0 px-5">
       <div className="flex items-baseline gap-2">
         <h2 className="text-3xl font-bold text-white">{profile.name}</h2>
@@ -125,8 +197,6 @@ const ProfileSlide = ({ profile, onLike, onMessage }) => (
         </div>
       )}
     </div>
-
-    {/* Actions */}
     <div className="absolute bottom-5 left-0 right-0 flex items-center justify-center gap-5">
       <motion.button whileTap={{ scale: 0.88 }} onClick={() => onLike(profile.id, false)}
         className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
@@ -262,13 +332,11 @@ const Discover = () => {
               onMessage={handleMessage}
             />
           ))}
-
           {hasMore && (
-            <div ref={sentinelRef} className="flex items-center justify-center" style={{ height: 'calc(100dvh - 56px)' }}>
+            <div ref={sentinelRef} className="flex items-center justify-center" style={{ height: 'calc(100dvh - 56px - 58px)' }}>
               {loadingMore ? <Spinner /> : <span className="text-white/20 text-xs">Loading more…</span>}
             </div>
           )}
-
           {!hasMore && (
             <div className="flex items-center justify-center" style={{ height: '30vh' }}>
               <p className="text-white/25 text-xs">You've reached the end ✨</p>
@@ -276,6 +344,9 @@ const Discover = () => {
           )}
         </div>
       )}
+
+      <PWAInstallButton />
+      <BottomNav navigate={navigate} />
 
       <PreferencesDrawer
         isOpen={drawerOpen}
